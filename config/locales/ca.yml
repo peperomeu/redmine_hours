@@ -1,0 +1,12 @@
+# English strings go here for Rails i18n
+en:
+  redmine_hours:
+    current_day: Dia actual
+    current_week: Setmana actual
+    new_time_entry: Nova entrada de temps
+    next_week: Setmana següent
+    next_day: Dia següent
+    prev_week: Setmana anterior
+    prev_day: Dia anterior
+    my_most_used: Més usada per mi aquest mes
+  permission_view_hours: Veure hores (plugin hores)
