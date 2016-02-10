@@ -17,12 +17,21 @@ class HoursController < ApplicationController
     @issues_assigned_to_me_not_used_recently = issues_assigned_to_me_not_used_recently.limit(10).
       includes(:status, :project, :tracker, :priority).
       order("#{IssuePriority.table_name}.position DESC, #{Issue.table_name}.updated_on DESC")
-
-    my_time_entries_sorted_count = TimeEntry.where("user_id = ? AND issue_id IS NOT NULL AND updated_on > ?",
-                                                   User.current.id,
-                                                   1.month.ago).
-                                                   count(group: :issue_id).
-                                                   sort { |a, b| b.last <=> a.last }
+    my_time_entries_sorted_count = nil
+    if Redmine::VERSION::MAJOR <= 2
+    	my_time_entries_sorted_count = TimeEntry.where("user_id = ? AND issue_id IS NOT NULL AND updated_on > ?",
+	                                                   User.current.id,
+	                                                   1.month.ago).
+	    											   count(group: :issue_id).
+	                                                   sort { |a, b| b.last <=> a.last }
+    else
+	    my_time_entries_sorted_count = TimeEntry.where("user_id = ? AND issue_id IS NOT NULL AND updated_on > ?",
+	                                                   User.current.id,
+	                                                   1.month.ago).
+	    											   group(:issue_id).
+	                                                   count().
+	                                                   sort { |a, b| b.last <=> a.last }
+	end
     issue_ids = my_time_entries_sorted_count.first(10).map(&:first)
     @my_most_used_issues = Issue.where("id in (?)", issue_ids)
   end
@@ -82,8 +91,13 @@ class HoursController < ApplicationController
   end
 
   def delete_row
-    TimeEntry.for_user(@user).spent_between(@week_start, @week_end).find(:all, :conditions => ["issue_id = \"#{params[:issue_id]}\" AND activity_id = \"#{params[:activity_id]}\" "]).each(&:delete)
-    TimeEntry.for_user(@user).spent_between(@week_start, @week_end).find(:all, :conditions => ["project_id = \"#{params[:project_id]}\" AND issue_id IS NULL AND activity_id = \"#{params[:activity_id]}\" "]).each(&:delete)
+  	if Redmine::VERSION::MAJOR <= 2
+  		TimeEntry.for_user(@user).spent_between(@week_start, @week_end).find(:all, :conditions => ["issue_id = \"#{params[:issue_id]}\" AND activity_id = \"#{params[:activity_id]}\" "]).each(&:delete)
+    	TimeEntry.for_user(@user).spent_between(@week_start, @week_end).find(:all, :conditions => ["project_id = \"#{params[:project_id]}\" AND issue_id IS NULL AND activity_id = \"#{params[:activity_id]}\" "]).each(&:delete)
+    else
+    	TimeEntry.for_user(@user).where("#{TimeEntry.table_name}.spent_on BETWEEN ? AND ?",@week_start,@week_end).where(issue_id: params[:issue_id], activity_id: params[:activity_id]).delete_all
+    	TimeEntry.for_user(@user).where("#{TimeEntry.table_name}.spent_on BETWEEN ? AND ?",@week_start,@week_end).where(project_id: params[:project_id], issue_id: nil, activity_id: params[:activity_id]).delete_all
+    end
     redirect_to :back
   end
 
@@ -103,7 +117,7 @@ class HoursController < ApplicationController
   def get_issues
     @loggable_projects = Project.all.select{ |pr| @user.allowed_to?(:log_time, pr)}
 
-    @weekly_time_entries = TimeEntry.for_user(@user).spent_between(@week_start, @week_end)
+    @weekly_time_entries = TimeEntry.for_user(@user).where("#{TimeEntry.table_name}.spent_on BETWEEN ? AND ?",@week_start,@week_end)
 
     @week_issues = []
     @weekly_time_entries.each do |te|
@@ -130,7 +144,7 @@ class HoursController < ApplicationController
     @daily_issues = @week_issues.select{|time_entry_hash| time_entry_hash[@current_day.to_s(:param_date)]} if @current_day
 
     if @week_issues.empty?
-      last_week_time_entries = TimeEntry.for_user(@user).spent_between(@week_start-7, @week_end-7).sort_by{|te| te.issue.project.name}.sort_by{|te| te.issue.subject }
+      last_week_time_entries = TimeEntry.for_user(@user).where("#{TimeEntry.table_name}.spent_on BETWEEN ? AND ?",@week_start-7,@week_end-7).sort_by{|te| te.issue.project.name}.sort_by{|te| te.issue.subject }
       last_week_time_entries.each do |te|
         time_entry_hash = { :id => te.id,
                             :issue_id => te.issue_id,

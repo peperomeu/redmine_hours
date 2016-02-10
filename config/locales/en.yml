@@ -9,4 +9,6 @@ en:
     prev_week: Previous week
     prev_day: Previous day
     my_most_used: Most used by me this month
+    timesheet_for: Timesheet for
   permission_view_hours: View hours
+  label_hours: Hours

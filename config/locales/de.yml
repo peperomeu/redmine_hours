@@ -8,4 +8,6 @@ de:
     next_day: Morgen
     prev_week: Vergangene Woche
     prev_day: Gestern
+    timesheet_for: Arbeitszeittabelle für   
   permission_view_hours: Stunden anzeigen
+  label_hours: Stunden

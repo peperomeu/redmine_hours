@@ -1,4 +1,4 @@
-# English strings go here for Rails i18n
+# Catalan strings go here for Rails i18n
 ca:
   redmine_hours:
     current_day: Dia actual
@@ -9,4 +9,6 @@ ca:
     prev_week: Setmana anterior
     prev_day: Dia anterior
     my_most_used: Més usada per mi aquest mes
+    timesheet_for: Part d'hores de
   permission_view_hours: Veure hores (plugin hores)
+  label_hours: Hores

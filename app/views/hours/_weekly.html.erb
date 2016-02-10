@@ -1,4 +1,4 @@
-<strong> <%= @week_start.to_s(:week) %> - <%= @week_end.to_s(:week) %> </strong>
+<strong><%= l(:label_week) %> <%= @week_start.strftime('%W/%Y') %> (<%= format_date(@week_start) %> - <%= format_date(@week_end) %>)</strong>
 <br />
 
 <% form_content = lambda do %>
@@ -7,7 +7,8 @@
 		<tr>
 			<th></th>
 			<% (@week_start..@week_end).each do |d| %>
-   		 <th><%= link_to d.to_s(:day), :controller => "hours", :action => "index",
+			<!-- "#{day_name(d)} #{d.mday}" -->
+   		 <th><%= link_to "#{::I18n.t('date.abbr_day_names')[d.wday % 7]} #{d.mday}" , :controller => "hours", :action => "index",
 						:day => d.to_s(:param_date) %></th>
 			<% end %>
 		</tr>

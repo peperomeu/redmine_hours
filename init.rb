@@ -34,11 +34,11 @@ Redmine::Plugin.register :redmine_hours do
   name 'Redmine Hours Plugin'
   author 'Digital Natives'
   description 'Redmine Hours is a plugin to fill out your weekly timelog / timesheet easier.'
-  version '0.1.1'
-  url 'https://github.com/digitalnatives/redmine_hours'
+  version '0.1.2'
+  url 'https://github.com/peperomeu/redmine_hours.git'
 
   permission :view_hours, :work_time => :index
 
-  menu(:top_menu, :hours, {:controller => "hours", :action => 'index'}, :caption => 'Hours', :after => :my_page, :if => Proc.new{ User.current.logged? }, :param => :user_id)
+  menu(:top_menu, :hours, {:controller => "hours", :action => 'index'}, :caption => :label_hours, :after => :my_page, :if => Proc.new{ User.current.logged? }, :param => :user_id)
 
 end

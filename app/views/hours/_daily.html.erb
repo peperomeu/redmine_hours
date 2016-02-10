@@ -1,4 +1,4 @@
-<strong> <%= @current_day.to_s(:day_full) %> </strong>
+<strong> <%= "#{format_date(@current_day)}, #{day_name(@current_day.wday)}" %> </strong>
 <br />
 <br />
 
