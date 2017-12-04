@@ -112,23 +112,25 @@ class HoursController < ApplicationController
       @week_start = params[:week].nil? ? DateTime.now.beginning_of_week : DateTime.strptime(params[:week], Time::DATE_FORMATS[:param_date]).beginning_of_week
       @week_end = params[:week].nil? ? DateTime.now.end_of_week : DateTime.strptime(params[:week], Time::DATE_FORMATS[:param_date]).end_of_week
     end
+
   end
 
   def get_issues
     @loggable_projects = Project.all.select{ |pr| @user.allowed_to?(:log_time, pr)}
 
-    @weekly_time_entries = TimeEntry.for_user(@user).where("#{TimeEntry.table_name}.spent_on BETWEEN ? AND ?",@week_start,@week_end)
+    @weekly_time_entries = TimeEntry.for_user(@user).where("#{TimeEntry.table_name}.spent_on BETWEEN ? AND ?",@week_start-1,@week_end)
 
     @week_issues = []
     @weekly_time_entries.each do |te|
       time_entry_hash = { :id => te.id,
                           :issue_id => te.issue_id,
-                          :activity_id => te.activity_id,
+                          :activity_id => te.activity_id, 
                           :project_id => te.project.id,
                           :project_name => te.project.name,
                           :issue_text => te.issue.try(:to_s),
                           :spent_on => te.spent_on.to_s(:param_date),
-                          :activity_name => te.activity.name
+                          :activity_name => te.activity.name,
+                          :link => project_time_entries_path(te.project.id, :issue_id => "~#{te.issue_id}")
       }
       time_entry_hash[:issue_class] ||= te.issue.closed? ? 'issue closed' : 'issue' if te.issue
       time_entry_hash[te.spent_on.to_s(:param_date)] = {:hours => te.hours, :te_id => te.id, :comments => te.comments}
@@ -144,7 +146,7 @@ class HoursController < ApplicationController
     @daily_issues = @week_issues.select{|time_entry_hash| time_entry_hash[@current_day.to_s(:param_date)]} if @current_day
 
     if @week_issues.empty?
-      last_week_time_entries = TimeEntry.for_user(@user).where("#{TimeEntry.table_name}.spent_on BETWEEN ? AND ?",@week_start-7,@week_end-7).sort_by{|te| te.issue.project.name}.sort_by{|te| te.issue.subject }
+      last_week_time_entries = TimeEntry.for_user(@user).where("#{TimeEntry.table_name}.spent_on BETWEEN ? AND ?",@week_start-8,@week_end-7).sort_by{|te| te.issue.project.name}.sort_by{|te| te.issue.subject }
       last_week_time_entries.each do |te|
         time_entry_hash = { :id => te.id,
                             :issue_id => te.issue_id,
