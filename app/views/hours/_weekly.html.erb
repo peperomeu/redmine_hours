@@ -3,7 +3,8 @@
 
 <% form_content = lambda do %>
 
-	<table>
+  <table class="list">
+  <thead>
 		<tr>
 			<th></th>
 			<% (@week_start..@week_end).each do |d| %>
@@ -11,7 +12,7 @@
    		 <th><%= link_to "#{::I18n.t('date.abbr_day_names')[d.wday % 7]} #{d.mday}" , :controller => "hours", :action => "index",
 						:day => d.to_s(:param_date) %></th>
 			<% end %>
-		</tr>
+		</tr></thead><tbody>
 		<% @week_issues.each do |k, day_groups| %>
       <% issue_id, activity_id = k %>
       <% lines = day_groups.max_by { |_, entries| entries.size }.size %>
@@ -19,6 +20,18 @@
       <% info_hash = hashes.first %>
       <% project_id = info_hash[:project_id] %>
       <% 0.upto lines  do |index| %>
+        <!--<tr><td><%= info_hash %></td></tr>-->
+        <% show_row = false %>
+        <% if index == 0 %>
+          <% show_row = true %>
+        <% else %>
+          <% (@week_start..@week_end).map { |d| d.to_s(:param_date)}.each do |d| %>
+            <% day_group = day_groups[d] || {} %>
+            <% info_hash = day_group[index] || {} %>
+            <% show_row = !info_hash.empty? if !show_row %>
+          <% end %>
+        <% end %>
+        <% if show_row %>
         <tr>
           <td>
             <% if index == 0 %>
@@ -40,30 +53,36 @@
               <% end %>
             </td>
           <% end %>
-          <% if index == 0 %>
-            <td><%= link_to image_tag('delete.png'), {:controller => 'hours',
+          <td>
+            <% if index == 0 %>
+              <%= link_to "delete", {:controller => 'hours',
                                   :action => 'delete_row',
                                   :issue_id => issue_id,
                                   :project_id => project_id,
                                   :activity_id => activity_id,
                                   :week =>@week_start.to_s(:param_date)
                                  },
-                                                        :confirm => l(:text_are_you_sure),
-                                                        :method => :delete,
-                                                        :title => l(:button_delete) %></td>
-          <% end %>
+                                  :confirm => l(:text_are_you_sure),
+                                  :method => :delete,
+                                  :title => l(:button_delete),
+                                  :class => "icon-only icon-del" %>
+            <% end %>
+          </td>
         </tr>
+        <% end %>
       <% end %>
-		<% end %>
+    <% end %>
+    </tbody><tfoot>
     <tr>
-      <td><hr /><strong>Total:</strong></td>
+      <td>Total:</td>
       <% (@week_start..@week_end).each do |day| %>
-       <td><hr /><%= @daily_totals[day.to_s(:param_date)] ? @daily_totals[day.to_s(:param_date)] : 0.0  %></td>
+       <td><%= @daily_totals[day.to_s(:param_date)] ? @daily_totals[day.to_s(:param_date)] : 0.0  %></td>
       <% end %>
-    </tr>
+      <td></td>
+    </tr></tfoot>
 	</table>
 
-<p>
+<p id="hours_save">
 	<%= submit_tag l(:button_save) %>
 </p>
 

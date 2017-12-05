@@ -1,70 +1,89 @@
-<strong> <%= "#{format_date(@current_day)}, #{day_name(@current_day.wday)}" %> </strong>
+<strong>
+	<%= "#{format_date(@current_day)}, #{day_name(@current_day.wday)}" %>
+</strong>
 <br />
 <br />
 
 <% form_content = lambda do %>
 
-<table>
-	<tr>
-		<th><%= l(:field_issue) %></th>
-		<th><%= l(:field_hours) %></th>
-		<th><%= l(:field_comments) %></th>
-	</tr>
-	<% @daily_issues.each do |info_hash| %>
-	<tr>
-		<td>
-			<%= link_to info_hash[:project_name], project_path(info_hash[:project_id]) %> -
-			<%= link_to info_hash[:issue_text], info_hash[:link], :class => info_hash[:issue_class]  if info_hash[:issue_id] %>
-			(<%= info_hash[:activity_name]%>)
-		</td>
-		<td>
-			<%= text_field_tag "hours[#{info_hash[@current_day.to_s(:param_date)][:te_id]}][spent]", info_hash[@current_day.to_s(:param_date)].nil? || info_hash[@current_day.to_s(:param_date)][:hours] == 0.0 ?
+	<table class="list">
+		<thead>
+			<tr>
+				<th>
+					<%= l(:field_issue) %>
+				</th>
+				<th>
+					<%= l(:field_hours) %>
+				</th>
+				<th>
+					<%= l(:field_comments) %>
+				</th>
+			</tr>
+		</thead>
+		<tbody>
+			<% @daily_issues.each do |info_hash| %>
+				<tr>
+					<td>
+						<%= link_to info_hash[:project_name], project_path(info_hash[:project_id]) %> -
+							<%= link_to info_hash[:issue_text], info_hash[:link], :class => info_hash[:issue_class]  if info_hash[:issue_id] %>
+								(
+								<%= info_hash[:activity_name]%>)
+					</td>
+					<td>
+						<%= text_field_tag "hours[#{info_hash[@current_day.to_s(:param_date)][:te_id]}][spent]", info_hash[@current_day.to_s(:param_date)].nil? || info_hash[@current_day.to_s(:param_date)][:hours] == 0.0 ?
    															 '' : info_hash[@current_day.to_s(:param_date)][:hours],
    															 :size => 1 %>
-   	</td>
-		<td>
-			<%= text_field_tag "hours[#{info_hash[@current_day.to_s(:param_date)][:te_id]}][comments]", info_hash[@current_day.to_s(:param_date)].nil? || info_hash[@current_day.to_s(:param_date)][:comments].blank? ?
+					</td>
+					<td>
+						<%= text_field_tag "hours[#{info_hash[@current_day.to_s(:param_date)][:te_id]}][comments]", info_hash[@current_day.to_s(:param_date)].nil? || info_hash[@current_day.to_s(:param_date)][:comments].blank? ?
    															 '' : info_hash[@current_day.to_s(:param_date)][:comments],
    															 :size => 50 %>
 
 
-			<%= info_hash[:issue_comment]%>
-		</td>
-		<td>
-			 <%= link_to image_tag('edit.png'), { :controller => 'timelog',
-			 																			:action => 'edit',
-			 																			:id => info_hash[@current_day.to_s(:param_date)][:te_id]
-			 																		},
-			 																			:title => l(:button_edit) %>
-		</td>
-		<td>
-			   <%= link_to image_tag('delete.png'), { :controller => 'timelog',
+							<%= info_hash[:issue_comment]%>
+					</td>
+					<td>
+						<%= link_to "edit", { :controller => 'timelog',
+											:action => 'edit',
+											:id => info_hash[@current_day.to_s(:param_date)][:te_id]
+										},
+											:title => l(:button_edit),
+											:class => "icon-only icon-edit" %>
+					</td>
+					<td>
+						<%= link_to "delete", { :controller => 'timelog',
 			   																				:action => 'destroy',
 			   																				:id => info_hash[@current_day.to_s(:param_date)][:te_id]
 			   																			},
                                                 :confirm => l(:text_are_you_sure),
                                                 :method => :delete,
-                                                :title => l(:button_delete) %>
-		</td>
-	</tr>
+                                                :title => l(:button_delete),
+												:class => "icon-only icon-del" %>
+					</td>
+				</tr>
+				<% end %>
+		</tbody>
+		<tfoot>
+			<tr>
+				<td>
+					Total:
+				</td>
+				<td>
+						<%= @daily_totals[@current_day.to_s(:param_date)] %>
+				</td>
+				<td></td><td></td><td></td>
+			</tr>
+		</tfoot>
+	</table>
+
+	<p id="hours_save">
+		<%= submit_tag l(:button_save) %>
+	</p>
+
 	<% end %>
-	<tr>
-		<td><hr /><strong>Total:</string></td>
-		<td><hr /><strong><%= @daily_totals[@current_day.to_s(:param_date)] %></string></td>
-		<td><hr />&nbsp;</td>
-		<td><hr />&nbsp;</td>
-		<td><hr />&nbsp;</td>
-	</tr>
-</table>
 
-<p>
-	<%= submit_tag l(:button_save) %>
-</p>
-
-<% end %>
-
-<% if Redmine::VERSION::MAJOR == 1 %>
-  <% form_tag :controller => 'hours', :action => 'save_daily', :day =>@current_day.to_s(:param_date), &form_content %>
-<% else %>
-  <%= form_tag :controller => 'hours', :action => 'save_daily', :day =>@current_day.to_s(:param_date), &form_content %>
-<% end %>
+		<% if Redmine::VERSION::MAJOR == 1 %>
+			<% form_tag :controller => 'hours', :action => 'save_daily', :day =>@current_day.to_s(:param_date), &form_content %>
+				<% else %>
+					<%= form_tag :controller => 'hours', :action => 'save_daily', :day =>@current_day.to_s(:param_date), &form_content %>
+						<% end %>
