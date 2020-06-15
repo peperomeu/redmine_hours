@@ -1,0 +1,14 @@
+# Portuguese strings go here for Rails i18n
+pt:
+  redmine_hours:
+    current_day: Hoje
+    current_week: Semana em curso
+    new_time_entry: Nova entrada de tempo
+    next_week: Semana seguinte
+    next_day: Día seguinte
+    prev_week: Semana anterior
+    prev_day: Día anterior
+    my_most_used: Mais usado por mim este mês
+    timesheet_for: Folha de horários de
+  permission_view_hours: Ver horas (plugin horas)
+  label_hours: Horas
